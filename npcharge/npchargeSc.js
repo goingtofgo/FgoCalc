@@ -544,8 +544,8 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
         console.log("abadbadfb");
         document.getElementById("txtPanel").innerHTML += box;
     }
-    updateBuff_all();
-
+//    updateBuff_all();
+    changeBuffView();
 })
 
 function unchecked_all(){
@@ -618,7 +618,6 @@ function updateBuff_one(subbuf,addbuf){
 }
 
 //id,name,skill
-//busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
 var sumBuff = makeZeroArray(buffLength);
 var activated = {};
 function updateBuff_once(onoff, type, skill,id){
@@ -664,14 +663,22 @@ function updateBuff_once(onoff, type, skill,id){
         }
         activated[newid] = null;
     }
+    changeBuffView();
 }
 
+//busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
+function changeBuffView(){
+    if(Number(NpCommand.value)===3) CmdBuff.value = sumBuff[2];
+    else if(Number(NpCommand.value)===1) CmdBuff.value = sumBuff[4];
+    NpBuff.value = sumBuff[6];
+    AtkBuff.value = sumBuff[7] + sumBuff[8];
+    DmgPlus.value = sumBuff[9];
+    NpDmgBuff.value = sumBuff[12];
+
+}
 function changeCraft()
 {
     var i;
-    var craft;
-    var prevbuf = CraftBuff;
-    CraftBuff = makeZeroArray(buffLength);
     updateBuff_once(false,"craft",0,null);
     if(Number(Craft.value)===0){
         $('#LimitBreak').prop('disabled',true);
@@ -722,6 +729,7 @@ CraftMax.addEventListener("change",function(){//예장 만렙 체크박스 이�
 function changeSupporter(support) {
     var id;
     var prevbuf;
+
     if(support===1){
         id = Supporter1.value;
         if(Number(id)===0){
@@ -740,12 +748,16 @@ function changeSupporter(support) {
             $('#Skill1_3').prop('disabled',false);
             $('#Bond1').prop('disabled',false);
         }
-        prevbuf = SupportBuff1;
-        SupportBuff1 = makeZeroArray(buffLength);
-        if(Bond1.checked === true) changeSupporterSkill(SupportBuff1,id,0,true);
-        if(Skill1_1.checked === true) changeSupporterSkill(SupportBuff1,id,1,true);
-        if(Skill1_2.checked === true) changeSupporterSkill(SupportBuff1,id,2,true);
-        if(Skill1_3.checked === true) changeSupporterSkill(SupportBuff1,id,3,true);
+        support = "supporter1";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond1.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill1_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill1_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill1_3.checked === true) changeSupporterSkill(support,id,3,true);
     }
     else if(support===2){
         id = Supporter2.value;
@@ -765,12 +777,16 @@ function changeSupporter(support) {
             $('#Skill2_3').prop('disabled',false);
             $('#Bond2').prop('disabled',false);
         }
-        prevbuf = SupportBuff2;
-        SupportBuff2 = makeZeroArray(buffLength);
-        if(Bond2.checked === true) changeSupporterSkill(SupportBuff2,id,0,true);
-        if(Skill2_1.checked === true) changeSupporterSkill(SupportBuff2,id,1,true);
-        if(Skill2_2.checked === true) changeSupporterSkill(SupportBuff2,id,2,true);
-        if(Skill2_3.checked === true) changeSupporterSkill(SupportBuff2,id,3,true);
+        support = "supporter2";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond2.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill2_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill2_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill2_3.checked === true) changeSupporterSkill(support,id,3,true);
         }
     else if(support===3){
         id = Supporter3.value;
@@ -798,38 +814,26 @@ function changeSupporter(support) {
             $('#Skill3_3').prop('disabled',false);
             $('#Bond3').prop('disabled',false);
         }
-        prevbuf = SupportBuff3;
-        SupportBuff3 = makeZeroArray(buffLength);
-        if(Bond3.checked === true) changeSupporterSkill(SupportBuff3,id,0,true);
-        if(Skill3_1.checked === true) changeSupporterSkill(SupportBuff3,id,1,true);
-        if(Skill3_2.checked === true) changeSupporterSkill(SupportBuff3,id,2,true);
-        if(Skill3_3.checked === true) changeSupporterSkill(SupportBuff3,id,3,true);
+        support = "supporter3";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond3.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill3_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill3_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill3_3.checked === true) changeSupporterSkill(support,id,3,true);
     }
-    updateBuff_one(prevbuf,null);
 }
 
-function changeSupporterSkill(SupportBuff, id, skill, onoff){
+function changeSupporterSkill(support, id, skill, onoff){
     if(Number(id) === 0) return ;
-    var i = (Number(id) - 1) * 5 + Number(skill);
-//    var objecttemp = Object.entries(supportSkillTable[i]);
-    var skillarray = supportSkillTable[i];
-    skillarray.push("support1");
-    console.log(skillarray);
-    //var arraytemp = makeZeroArray(buffLength);
-    if(onoff === true){
-        for(var j=0; j<buffLength && skillarray[j+3] != null; j++){
-          SupportBuff[j] = SupportBuff[j] + skillarray[j+3];
-          //arraytemp[j] = skillarray[j+3];
-        }
-        updateBuff_one(null,skillarray);
-    }
-    else if(onoff === false){
-        for(var j=0; j<buffLength && skillarray[j+3] != null; j++){
-            SupportBuff[j] = SupportBuff[j] - skillarray[j+3];
-            //arraytemp[j] = skillarray[j+3];
-        }
-        updateBuff_one(skillarray,null);
-    }
+    var i = (Number(id) * 5) - 4 + Number(skill);
+    if(onoff == true)
+        updateBuff_once(true,support,skill,i);
+    else
+        updateBuff_once(false,support,skill,null);
 }
 
 Supporter1.addEventListener("change",function(){//서포터1 변경 이벤트
@@ -839,40 +843,40 @@ Bond1.addEventListener("change",function(){//서포터1 인연예장 변경 이�
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,0,true)
+        changeSupporterSkill("supporter1",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,0,false)
+        changeSupporterSkill("supporter1",id,0,false)
     }
 })
 Skill1_1.addEventListener("change",function(){//서포터1 스킬1 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,1,true)
+        changeSupporterSkill("supporter1",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,1,false)
+        changeSupporterSkill("supporter1",id,1,false)
     }
 })
 Skill1_2.addEventListener("change",function(){//서포터1 스킬2 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,2,true)
+        changeSupporterSkill("supporter1",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,2,false)
+        changeSupporterSkill("supporter1",id,2,false)
     }
 })
 Skill1_3.addEventListener("change",function(){//서포터1 스킬3 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,3,true)
+        changeSupporterSkill("supporter1",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,3,false)
+        changeSupporterSkill("supporter1",id,3,false)
     }
 })
 
@@ -883,40 +887,40 @@ Bond2.addEventListener("change",function(){//서포터2 인연예장 변경 이�
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,0,true)
+        changeSupporterSkill("supporter2",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,0,false)
+        changeSupporterSkill("supporter2",id,0,false)
     }
 })
 Skill2_1.addEventListener("change",function(){//서포터2 스킬1 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,1,true)
+        changeSupporterSkill("supporter2",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,1,false)
+        changeSupporterSkill("supporter2",id,1,false)
     }
 })
 Skill2_2.addEventListener("change",function(){//서포터2 스킬2 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,2,true)
+        changeSupporterSkill("supporter2",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,2,false)
+        changeSupporterSkill("supporter2",id,2,false)
     }
 })
 Skill2_3.addEventListener("change",function(){//서포터2 스킬3 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,3,true)
+        changeSupporterSkill("supporter2",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,3,false)
+        changeSupporterSkill("supporter2",id,3,false)
     }
 })
 
@@ -927,68 +931,66 @@ Bond3.addEventListener("change",function(){//서포터3 인연예장 변경 이�
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,0,true)
+        changeSupporterSkill("supporter3",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,0,false)
+        changeSupporterSkill("supporter3",id,0,false)
     }
 })
 Skill3_1.addEventListener("change",function(){//서포터3 스킬1 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,1,true)
+        changeSupporterSkill("supporter3",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,1,false)
+        changeSupporterSkill("supporter3",id,1,false)
     }
 })
 Skill3_2.addEventListener("change",function(){//서포터3 스킬2 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,2,true)
+        changeSupporterSkill("supporter3",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,2,false)
+        changeSupporterSkill("supporter3",id,2,false)
     }
 })
 Skill3_3.addEventListener("change",function(){//서포터3 스킬3 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,3,true)
+        changeSupporterSkill("supporter3",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,3,false)
+        changeSupporterSkill("supporter3",id,3,false)
     }
 })
 
 function changeMysticCode(){
-    updateBuff_one(MysticBuff,null);
-    MysticBuff = makeZeroArray(buffLength);
+    updateBuff_once(false,"mystic",1,null);
+    updateBuff_once(false,"mystic",2,null);
+    updateBuff_once(false,"mystic",3,null);
     var i = Number(MysticCode.value) * 3;
-    if(mysticSkillTable[i]["used"]===0){
+    var tblength = mysticSkillTable[0].length - 1;
+    if(mysticSkillTable[i][tblength]===0){
         MysticSkill1.checked = false;
         $('#MysticSkill1').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i]["used"]===1){
-        $('#MysticSkill1').prop('disabled',false); 
-    }
-    if(mysticSkillTable[i+1]["used"]===0){
+    else $('#MysticSkill1').prop('disabled',false); 
+
+    if(mysticSkillTable[i+1][tblength]===0){
         MysticSkill2.checked = false;
         $('#MysticSkill2').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i+1]["used"]===1){
-        $('#MysticSkill2').prop('disabled',false); 
-    }
-    if(mysticSkillTable[i+2]["used"]===0){
+    else $('#MysticSkill2').prop('disabled',false); 
+
+    if(mysticSkillTable[i+2][-1]===0){
         MysticSkill3.checked = false;
         $('#MysticSkill3').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i+2]["used"]===1){
-        $('#MysticSkill3').prop('disabled',false); 
-    }
+    else $('#MysticSkill3').prop('disabled',false); 
 
     if(MysticSkill1.checked === true) changeMysticSkill(1,true);
     if(MysticSkill2.checked === true) changeMysticSkill(2,true);
@@ -1001,23 +1003,14 @@ MysticCode.addEventListener("change",function(){//마술예장 드롭다운 이�
 })
 function changeMysticSkill(skill, onoff){
     var i = Number(MysticCode.value) * 3 - 1 + Number(skill);
-    var objecttemp = Object.entries(mysticSkillTable[i]);
-    var arraytemp = makeZeroArray(buffLength);
     if(onoff === true){
-        for(var j=0; j<buffLength; j++){
-          MysticBuff[j] = MysticBuff[j] + objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(null,arraytemp);
+        updateBuff_once(true,"mystic",skill,i);
     }
     else if(onoff === false){
-        for(var j=0; j<buffLength; j++){
-          MysticBuff[j] = MysticBuff[j] - objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(arraytemp,null);
+        updateBuff_once(false,"mystic",skill,null);
     }
 }
+
 MysticSkill1.addEventListener("change",function(){//마술예장 스킬1 변경 이벤트
     if(this.checked === true)
     {
