@@ -11,9 +11,22 @@ var craftTable;
 var mysticTable;
 var mysticSkillTable;
 var buffLength = 13;
+var temptable;
+
+//id,name,skill,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
 
 //csv 데이터 호출, 파싱 함수
 function getData() {
+    var supportskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/SupportSkillData2.csv",{
+        delimiter : ",",
+        download: true,
+        header:false,
+        dynamicTyping:true,
+        complete: function(results){
+            temptable = results.data;
+        }
+    });
+
     //(StartStat,MaxStat, Rare, GrailLev)
     var servdata2 = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServDataBase.csv",{
         delimiter : ",",
@@ -83,7 +96,7 @@ function getData() {
     var craftlist = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/CraftList.csv",{
         delimiter : ",",
         download: true,
-        header:true,
+        header:false,
         dynamicTyping:true,
         complete: function(results){
             craftlistTable = results.data;
