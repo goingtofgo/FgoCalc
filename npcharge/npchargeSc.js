@@ -179,7 +179,8 @@ function getData() {
 var UpdateDate = document.getElementById("UpdateDate");
 
 //입력 데이터 선언-서번트 데이터
-var buffs = [];
+var sumBuff = makeZeroArray(buffLength);
+var activated = {};
 var Servant = document.getElementById("Servant");
 var ServantATK = document.getElementById("ServantATK");
 var Craft = document.getElementById("Craft");
@@ -544,7 +545,6 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
         console.log("abadbadfb");
         document.getElementById("txtPanel").innerHTML += box;
     }
-//    updateBuff_all();
     changeBuffView();
 })
 
@@ -570,56 +570,14 @@ function unchecked_all(){
     LimitBreak.checked=false;
 
 }
-function updateBuff_all(){
-    var prevbuf = allbuf;
-    allbuf = makeZeroArray(buffLength);
-    for(var i = 0; i<buffLength; i++){
-        allbuf[i] = SupportBuff1[i] + SupportBuff2[i] + SupportBuff3[i] + CraftBuff[i] + MysticBuff[i];
-    }
 
-    if(Number(NpCommand.value)===3) CmdBuff.value = allbuf[1];
-    else if(Number(NpCommand.value)===1) CmdBuff.value = allbuf[2];
-    if(allbuf[3]!=prevbuf[3]) NpBuff.value = allbuf[3];
-    if(allbuf[4]!=prevbuf[4]) AtkBuff.value = allbuf[4];
-    if(allbuf[5]!=prevbuf[5]) DmgPlus.value = allbuf[5];
-    if(allbuf[8]!=prevbuf[8]) NpDmgBuff.value = allbuf[8];
-}
 
 function makeZeroArray(length){
     return Array.apply(null, new Array(length)).map(Number.prototype.valueOf,0);
 }
 
-function updateBuff_one(subbuf,addbuf){
-    var prevbuf = allbuf.slice;
-    if(subbuf!=null){
-        for(var i=0;i<buffLength; i++){
-            allbuf[i] = allbuf[i] - subbuf[i];
-        }
-        if(Number(NpCommand.value)===3) CmdBuff.value = Number(CmdBuff.value) - subbuf[1];
-        else if(Number(NpCommand.value)===1) CmdBuff.value = Number(CmdBuff.value) - subbuf[2];
-        NpBuff.value = Number(NpBuff.value) - subbuf[3];
-        AtkBuff.value = Number(AtkBuff.value) - subbuf[4];
-        DmgPlus.value = Number(DmgPlus.value) - subbuf[5];
-        NpDmgBuff.value = Number(NpDmgBuff.value) - subbuf[8];
-    }
-    if(addbuf!=null){
-        for(var i=0;i<buffLength; i++){
-            allbuf[i] = allbuf[i] + addbuf[i];
-        }
-        if(Number(NpCommand.value)===3) CmdBuff.value = Number(CmdBuff.value) + addbuf[1];
-        else if(Number(NpCommand.value)===1) CmdBuff.value = Number(CmdBuff.value) + addbuf[2];
-        NpBuff.value = Number(NpBuff.value) + addbuf[3];
-        AtkBuff.value = Number(AtkBuff.value) + addbuf[4];
-        DmgPlus.value = Number(DmgPlus.value) + addbuf[5];
-        NpDmgBuff.value = Number(NpDmgBuff.value) + addbuf[8];
-    }
-
-     
-}
-
 //id,name,skill
-var sumBuff = makeZeroArray(buffLength);
-var activated = {};
+
 function updateBuff_once(onoff, type, skill,id){
     var buff;
     var newid = type+skill;
@@ -986,7 +944,7 @@ function changeMysticCode(){
     }
     else $('#MysticSkill2').prop('disabled',false); 
 
-    if(mysticSkillTable[i+2][-1]===0){
+    if(mysticSkillTable[i+2][tblength]===0){
         MysticSkill3.checked = false;
         $('#MysticSkill3').prop('disabled',true); 
     }
