@@ -18,17 +18,6 @@ var temptable;
 
 //csv 데이터 호출, 파싱 함수
 function getData() {
-    var supportskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/SupporterSkillData2.csv",{
-        delimiter : ",",
-        download: true,
-        header:false,
-        dynamicTyping:true,
-        complete: function(results){
-            temptable = results.data;
-        }
-    });
-
-    //(StartStat,MaxStat, Rare, GrailLev)
     var servdata2 = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServDataBase.csv",{
         delimiter : ",",
         download: true,
@@ -659,14 +648,14 @@ function changeCraft()
     craft = craftTable[i];
     var arraytemp = Object.entries(craftTable[i]);
     for(var j=0; j<buffLength; j++){
-        CraftBuff[j] = arraytemp[j+5][1];
+        CraftBuff[j] = arraytemp[j+2][1];
     }
     updateBuff_one(prevbuf,CraftBuff);
 }
 
 function changeCraftATK(){
-    var i = Number(Craft.value) * 2;
-    var craft = craftTable[i];
+    var i = Number(Craft.value);
+    var craft = craftlistTable[i];
     if(CraftMax.checked === true){
         CraftATK.value = Number(craft["atk_final"]);
     }
