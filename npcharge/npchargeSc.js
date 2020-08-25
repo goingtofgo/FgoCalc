@@ -7,16 +7,18 @@ var servTable2;
 var EnemyPresetTable;
 var supportTable;
 var supportSkillTable;
+var craftlistTable;
 var craftTable;
 var mysticTable;
 var mysticSkillTable;
 //var buffLength = 13;
 var buffLength = 18;
-var temptable;
 
 //id,name,skill,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
 
 //csv 데이터 호출, 파싱 함수
+var servId2;
+
 function getData() {
     var servdata2 = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServDataBase.csv",{
         delimiter : ",",
@@ -42,6 +44,7 @@ function getData() {
                 Servant.innerHTML += "<option value = \"" + servTable[i]["name"] + "\">"+servTable[i]["name_list"]+"</option>";
             }
             //Servant table 0 index의 값으로 초기화
+            servId2 = Number(servTable[0]["id"]);
             var servId = Number(servTable[0]["id"]);
             var atk_init = servTable2[servId]["atk_init"];
             var atk_final = servTable2[servId]["atk"];
@@ -140,7 +143,7 @@ function getData() {
     var supportskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/SupporterSkillData.csv",{
         delimiter : ",",
         download: true,
-        header:true,
+        header:false,
         dynamicTyping:true,
         complete: function(results){
             supportSkillTable = results.data;
@@ -176,6 +179,7 @@ function getData() {
 var UpdateDate = document.getElementById("UpdateDate");
 
 //입력 데이터 선언-서번트 데이터
+var buffs = [];
 var Servant = document.getElementById("Servant");
 var ServantATK = document.getElementById("ServantATK");
 var Craft = document.getElementById("Craft");
@@ -212,18 +216,6 @@ var MysticSkill1  = document.getElementById("MysticSkill1");
 var MysticSkill2  = document.getElementById("MysticSkill2");
 var MysticSkill3  = document.getElementById("MysticSkill3");
 var MysticBuff = makeZeroArray(buffLength);
-
-var Support_busterbuf;
-var Support_artsbuf;
-var Support_quickbuf;
-var Support_npgainbuf;
-var Support_atkbuf;
-var Support_npplus;
-var Support_dmgplus;
-var Support_criiticalbuf;
-var Support_startbuf;
-var Support_npbuf;
-var Support_npextramul;
 
 var NpLev = document.getElementById("NpLev");
 var NpCommand = document.getElementById("NpCommand");
@@ -545,6 +537,13 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
         }
 
     }
+    var hw = document.getElementById('Servant');
+    var box = "<input id='testtemp' type='checkbox' value='manual'>";
+    console.log("value:" + hw.value);
+    if(hw.value === 'Lakshmibai'){
+        console.log("abadbadfb");
+        document.getElementById("txtPanel").innerHTML += box;
+    }
     updateBuff_all();
 
 })
@@ -589,7 +588,7 @@ function updateBuff_all(){
 function makeZeroArray(length){
     return Array.apply(null, new Array(length)).map(Number.prototype.valueOf,0);
 }
-//id,name,skill,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
+
 function updateBuff_one(subbuf,addbuf){
     var prevbuf = allbuf.slice;
     if(subbuf!=null){
@@ -618,16 +617,65 @@ function updateBuff_one(subbuf,addbuf){
      
 }
 
+//id,name,skill
+//busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
+var sumBuff = makeZeroArray(buffLength);
+var activated = {};
+function updateBuff_once(onoff, type, skill,id){
+    var buff;
+    var newid = type+skill;
+    var id;
+    if(onoff == false){
+        id = activated[newid];
+    }
+    if(id==null) return;
+    
+    switch(type){
+        case "supporter1":
+        case "supporter2":
+        case "supporter3":
+            buff = supportSkillTable[id];
+            break;
+        case "mystic":
+            buff = mysticSkillTable[id];
+            break;
+        case "servant":
+            break;
+        case "craft":
+            buff = craftTable[id];
+            break;
+        default:
+            break;
+    }
+    if(onoff == true){
+        for(var i = 0; i<buffLength; i++){
+            if(buff[i+3] == null) continue;
+            console.log(buff[i+3] + "type" + typeof(buff[i+3]));
+            var values = buff[i+3].split(';');
+            sumBuff[i] = sumBuff[i] + Number(values[0]);
+        }
+        activated[newid] = id;
+    } 
+    else{
+        for(var i = 0; i<buffLength; i++){
+            if(buff[i+3] == null) continue;
+            var values = buff[i+3].split(';');
+            sumBuff[i] = sumBuff[i] - Number(values[0]);
+        }
+        activated[newid] = null;
+    }
+}
+
 function changeCraft()
 {
     var i;
     var craft;
     var prevbuf = CraftBuff;
     CraftBuff = makeZeroArray(buffLength);
+    updateBuff_once(false,"craft",0,null);
     if(Number(Craft.value)===0){
         $('#LimitBreak').prop('disabled',true);
         $('#CraftMax').prop('disabled',true);
-        updateBuff_one(prevbuf,null);
         LimitBreak.checked = false;
         CraftATK.value = 0;
         return;
@@ -645,12 +693,7 @@ function changeCraft()
         $('#CraftMax').prop('disabled',true);
     }
     changeCraftATK();
-    craft = craftTable[i];
-    var arraytemp = Object.entries(craftTable[i]);
-    for(var j=0; j<buffLength; j++){
-        CraftBuff[j] = arraytemp[j+2][1];
-    }
-    updateBuff_one(prevbuf,CraftBuff);
+    updateBuff_once(true,"craft",0,i);
 }
 
 function changeCraftATK(){
@@ -767,22 +810,25 @@ function changeSupporter(support) {
 
 function changeSupporterSkill(SupportBuff, id, skill, onoff){
     if(Number(id) === 0) return ;
-    var i = (Number(id) * 4) -3 + Number(skill);
-    var objecttemp = Object.entries(supportSkillTable[i]);
-    var arraytemp = makeZeroArray(buffLength);
+    var i = (Number(id) - 1) * 5 + Number(skill);
+//    var objecttemp = Object.entries(supportSkillTable[i]);
+    var skillarray = supportSkillTable[i];
+    skillarray.push("support1");
+    console.log(skillarray);
+    //var arraytemp = makeZeroArray(buffLength);
     if(onoff === true){
-        for(var j=0; j<buffLength; j++){
-          SupportBuff[j] = SupportBuff[j] + objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
+        for(var j=0; j<buffLength && skillarray[j+3] != null; j++){
+          SupportBuff[j] = SupportBuff[j] + skillarray[j+3];
+          //arraytemp[j] = skillarray[j+3];
         }
-        updateBuff_one(null,arraytemp);
+        updateBuff_one(null,skillarray);
     }
     else if(onoff === false){
-        for(var j=0; j<buffLength; j++){
-            SupportBuff[j] = SupportBuff[j] - objecttemp[j+3][1];
-            arraytemp[j] = objecttemp[j+3][1];
+        for(var j=0; j<buffLength && skillarray[j+3] != null; j++){
+            SupportBuff[j] = SupportBuff[j] - skillarray[j+3];
+            //arraytemp[j] = skillarray[j+3];
         }
-        updateBuff_one(arraytemp,null);
+        updateBuff_one(skillarray,null);
     }
 }
 
