@@ -11,11 +11,9 @@ var craftlistTable;
 var craftTable;
 var mysticTable;
 var mysticSkillTable;
-//var buffLength = 13;
 var buffLength = 18;
 
 //id,name,skill,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
-
 //csv 데이터 호출, 파싱 함수
 var servId2;
 
