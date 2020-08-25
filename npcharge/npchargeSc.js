@@ -4,6 +4,7 @@ $(function () {
 
 var servTable;//csv 데이터 저장 배열
 var servTable2;
+var servSkillTable;
 var EnemyPresetTable;
 var supportTable;
 var supportSkillTable;
@@ -171,8 +172,18 @@ function getData() {
 
         }
     });
+    var servskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServantSkillData.csv",{
+        delimiter : ",",
+        download: true,
+        header:false,
+        dynamicTyping:true,
+        complete: function(results){
+            servSkillTable = results.data;
 
+        }
+    });
 }
+
 
 var UpdateDate = document.getElementById("UpdateDate");
 
