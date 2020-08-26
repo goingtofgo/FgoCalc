@@ -1,4 +1,4 @@
-0,없음,limitbreak,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,posion,successbuf
+id,name,limitbreak,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,posion,successbuf
 1,컬라이더스코프,0,,,,,,,,,,,80;1;1;-1,,,,,,,
 1,컬라이더스코프,1,,,,,,,,,,,100;1;1;-1,,,,,,,
 2,흑성배,0,,,,,,,,,,,,,60;-1;1;-1,,,,,
