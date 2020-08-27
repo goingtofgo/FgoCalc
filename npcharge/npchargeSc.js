@@ -4,17 +4,21 @@ $(function () {
 
 var servTable;//csv 데이터 저장 배열
 var servTable2;
+var servSkillTable;
 var EnemyPresetTable;
 var supportTable;
 var supportSkillTable;
+var craftlistTable;
 var craftTable;
 var mysticTable;
 var mysticSkillTable;
-var buffLength = 13;
+var buffLength = 19;
 
+//id,name,skill,busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
 //csv 데이터 호출, 파싱 함수
+var servId2;
+
 function getData() {
-    //(StartStat,MaxStat, Rare, GrailLev)
     var servdata2 = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServDataBase.csv",{
         delimiter : ",",
         download: true,
@@ -39,6 +43,7 @@ function getData() {
                 Servant.innerHTML += "<option value = \"" + servTable[i]["name"] + "\">"+servTable[i]["name_list"]+"</option>";
             }
             //Servant table 0 index의 값으로 초기화
+            servId2 = Number(servTable[0]["id"]);
             var servId = Number(servTable[0]["id"]);
             var atk_init = servTable2[servId]["atk_init"];
             var atk_final = servTable2[servId]["atk"];
@@ -59,7 +64,7 @@ function getData() {
             var NpMag_tmp = NpDmTable[0] + 100 * NpUpgrade.value;
             if(NpCommand.value == 3) {
                 NpMag.value=NpMag_tmp*1.5;
-            }else
+            }else if(NpCommand.value == 1)
             {
                 NpMag.value= NpMag_tmp*2;
             }
@@ -99,7 +104,7 @@ function getData() {
     var craftdata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/CraftData.csv",{
         delimiter : ",",
         download: true,
-        header:true,
+        header:false,
         dynamicTyping:true,
         complete: function(results){
             craftTable = results.data;
@@ -137,7 +142,7 @@ function getData() {
     var supportskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/SupporterSkillData.csv",{
         delimiter : ",",
         download: true,
-        header:true,
+        header:false,
         dynamicTyping:true,
         complete: function(results){
             supportSkillTable = results.data;
@@ -160,19 +165,31 @@ function getData() {
     var mysticdata2 = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/MysticCodeSkillData.csv",{
         delimiter : ",",
         download: true,
-        header:true,
+        header:false,
         dynamicTyping:true,
         complete: function(results){
             mysticSkillTable = results.data;
 
         }
     });
+    var servskilldata = Papa.parse("https://raw.githubusercontent.com/goingtofgo/FgoCalc/develop1/Data/ServantSkillData.csv",{
+        delimiter : ",",
+        download: true,
+        header:false,
+        dynamicTyping:true,
+        complete: function(results){
+            servSkillTable = results.data;
 
+        }
+    });
 }
+
 
 var UpdateDate = document.getElementById("UpdateDate");
 
 //입력 데이터 선언-서번트 데이터
+var sumBuff = makeZeroArray(buffLength);
+var activated = {};
 var Servant = document.getElementById("Servant");
 var ServantATK = document.getElementById("ServantATK");
 var Craft = document.getElementById("Craft");
@@ -209,18 +226,6 @@ var MysticSkill1  = document.getElementById("MysticSkill1");
 var MysticSkill2  = document.getElementById("MysticSkill2");
 var MysticSkill3  = document.getElementById("MysticSkill3");
 var MysticBuff = makeZeroArray(buffLength);
-
-var Support_busterbuf;
-var Support_artsbuf;
-var Support_quickbuf;
-var Support_npgainbuf;
-var Support_atkbuf;
-var Support_npplus;
-var Support_dmgplus;
-var Support_criiticalbuf;
-var Support_startbuf;
-var Support_npbuf;
-var Support_npextramul;
 
 var NpLev = document.getElementById("NpLev");
 var NpCommand = document.getElementById("NpCommand");
@@ -312,6 +317,7 @@ const NpDmTableSp = [
 const ClassDmgMagTable = new Array (1,0.95,1.05,1,0.9,0.9,1.1,1,1.1,1.1,1,1,1);//클래스 보정계수
 const ClassNpRechargeMagTable = new Array(1,1,1,1.1,1.2,0.9,0.8,1,1,1,1.2,1,1);//적 클래스 NP보정계수
 const CommandMagTable = {
+  0 : 1.5,
   1 : 0.8,
   3 : 1
 };//커맨드 보정계수
@@ -521,7 +527,7 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
             var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
             if(NpCommand.value == 3) {
                 NpMag.value=NpMag_tmp*1.5;
-            }else
+            }else if(NpCommand.value == 1)
             {
                 NpMag.value= NpMag_tmp*2;
             }
@@ -542,8 +548,14 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
         }
 
     }
-    updateBuff_all();
-
+    var hw = document.getElementById('Servant');
+    var box = "<input id='testtemp' type='checkbox' value='manual'>";
+    console.log("value:" + hw.value);
+    if(hw.value === 'Lakshmibai'){
+        console.log("abadbadfb");
+        document.getElementById("txtPanel").innerHTML += box;
+    }
+    changeBuffView();
 })
 
 function unchecked_all(){
@@ -568,63 +580,77 @@ function unchecked_all(){
     LimitBreak.checked=false;
 
 }
-function updateBuff_all(){
-    var prevbuf = allbuf;
-    allbuf = makeZeroArray(buffLength);
-    for(var i = 0; i<buffLength; i++){
-        allbuf[i] = SupportBuff1[i] + SupportBuff2[i] + SupportBuff3[i] + CraftBuff[i] + MysticBuff[i];
-    }
 
-    if(Number(NpCommand.value)===3) CmdBuff.value = allbuf[1];
-    else if(Number(NpCommand.value)===1) CmdBuff.value = allbuf[2];
-    if(allbuf[3]!=prevbuf[3]) NpBuff.value = allbuf[3];
-    if(allbuf[4]!=prevbuf[4]) AtkBuff.value = allbuf[4];
-    if(allbuf[5]!=prevbuf[5]) DmgPlus.value = allbuf[5];
-    if(allbuf[8]!=prevbuf[8]) NpDmgBuff.value = allbuf[8];
-}
 
 function makeZeroArray(length){
     return Array.apply(null, new Array(length)).map(Number.prototype.valueOf,0);
 }
 
-function updateBuff_one(subbuf,addbuf){
-    var prevbuf = allbuf.slice;
-    if(subbuf!=null){
-        for(var i=0;i<buffLength; i++){
-            allbuf[i] = allbuf[i] - subbuf[i];
-        }
-        if(Number(NpCommand.value)===3) CmdBuff.value = Number(CmdBuff.value) - subbuf[1];
-        else if(Number(NpCommand.value)===1) CmdBuff.value = Number(CmdBuff.value) - subbuf[2];
-        NpBuff.value = Number(NpBuff.value) - subbuf[3];
-        AtkBuff.value = Number(AtkBuff.value) - subbuf[4];
-        DmgPlus.value = Number(DmgPlus.value) - subbuf[5];
-        NpDmgBuff.value = Number(NpDmgBuff.value) - subbuf[8];
-    }
-    if(addbuf!=null){
-        for(var i=0;i<buffLength; i++){
-            allbuf[i] = allbuf[i] + addbuf[i];
-        }
-        if(Number(NpCommand.value)===3) CmdBuff.value = Number(CmdBuff.value) + addbuf[1];
-        else if(Number(NpCommand.value)===1) CmdBuff.value = Number(CmdBuff.value) + addbuf[2];
-        NpBuff.value = Number(NpBuff.value) + addbuf[3];
-        AtkBuff.value = Number(AtkBuff.value) + addbuf[4];
-        DmgPlus.value = Number(DmgPlus.value) + addbuf[5];
-        NpDmgBuff.value = Number(NpDmgBuff.value) + addbuf[8];
-    }
+//id,name,skill
 
-     
+function updateBuff_once(onoff, type, skill,id){
+    var buff;
+    var newid = type+skill;
+    var id;
+    if(onoff == false){
+        id = activated[newid];
+    }
+    if(id==null) return;
+    
+    switch(type){
+        case "supporter1":
+        case "supporter2":
+        case "supporter3":
+            buff = supportSkillTable[id];
+            break;
+        case "mystic":
+            buff = mysticSkillTable[id];
+            break;
+        case "servant":
+            break;
+        case "craft":
+            buff = craftTable[id];
+            break;
+        default:
+            break;
+    }
+    if(onoff == true){
+        for(var i = 0; i<buffLength; i++){
+            if(buff[i+3] == null) continue;
+            console.log(buff[i+3] + "type" + typeof(buff[i+3]));
+            var values = buff[i+3].split(';');
+            sumBuff[i] = sumBuff[i] + Number(values[0]);
+        }
+        activated[newid] = id;
+    } 
+    else{
+        for(var i = 0; i<buffLength; i++){
+            if(buff[i+3] == null) continue;
+            var values = buff[i+3].split(';');
+            sumBuff[i] = sumBuff[i] - Number(values[0]);
+        }
+        activated[newid] = null;
+    }
+    changeBuffView();
 }
 
+//busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
+function changeBuffView(){
+    if(NpCommand.value == 3) CmdBuff.value = sumBuff[2];
+    else if(NpCommand.value == 1) CmdBuff.value = sumBuff[4];
+    NpBuff.value = sumBuff[6];
+    AtkBuff.value = sumBuff[7] + sumBuff[8];
+    DmgPlus.value = sumBuff[9];
+    NpDmgBuff.value = sumBuff[12];
+
+}
 function changeCraft()
 {
     var i;
-    var craft;
-    var prevbuf = CraftBuff;
-    CraftBuff = makeZeroArray(buffLength);
+    updateBuff_once(false,"craft",0,null);
     if(Number(Craft.value)===0){
         $('#LimitBreak').prop('disabled',true);
         $('#CraftMax').prop('disabled',true);
-        updateBuff_one(prevbuf,null);
         LimitBreak.checked = false;
         CraftATK.value = 0;
         return;
@@ -642,17 +668,12 @@ function changeCraft()
         $('#CraftMax').prop('disabled',true);
     }
     changeCraftATK();
-    craft = craftTable[i];
-    var arraytemp = Object.entries(craftTable[i]);
-    for(var j=0; j<buffLength; j++){
-        CraftBuff[j] = arraytemp[j+5][1];
-    }
-    updateBuff_one(prevbuf,CraftBuff);
+    updateBuff_once(true,"craft",0,i);
 }
 
 function changeCraftATK(){
-    var i = Number(Craft.value) * 2;
-    var craft = craftTable[i];
+    var i = Number(Craft.value);
+    var craft = craftlistTable[i];
     if(CraftMax.checked === true){
         CraftATK.value = Number(craft["atk_final"]);
     }
@@ -676,6 +697,7 @@ CraftMax.addEventListener("change",function(){//예장 만렙 체크박스 이�
 function changeSupporter(support) {
     var id;
     var prevbuf;
+
     if(support===1){
         id = Supporter1.value;
         if(Number(id)===0){
@@ -694,12 +716,16 @@ function changeSupporter(support) {
             $('#Skill1_3').prop('disabled',false);
             $('#Bond1').prop('disabled',false);
         }
-        prevbuf = SupportBuff1;
-        SupportBuff1 = makeZeroArray(buffLength);
-        if(Bond1.checked === true) changeSupporterSkill(SupportBuff1,id,0,true);
-        if(Skill1_1.checked === true) changeSupporterSkill(SupportBuff1,id,1,true);
-        if(Skill1_2.checked === true) changeSupporterSkill(SupportBuff1,id,2,true);
-        if(Skill1_3.checked === true) changeSupporterSkill(SupportBuff1,id,3,true);
+        support = "supporter1";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond1.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill1_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill1_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill1_3.checked === true) changeSupporterSkill(support,id,3,true);
     }
     else if(support===2){
         id = Supporter2.value;
@@ -719,12 +745,16 @@ function changeSupporter(support) {
             $('#Skill2_3').prop('disabled',false);
             $('#Bond2').prop('disabled',false);
         }
-        prevbuf = SupportBuff2;
-        SupportBuff2 = makeZeroArray(buffLength);
-        if(Bond2.checked === true) changeSupporterSkill(SupportBuff2,id,0,true);
-        if(Skill2_1.checked === true) changeSupporterSkill(SupportBuff2,id,1,true);
-        if(Skill2_2.checked === true) changeSupporterSkill(SupportBuff2,id,2,true);
-        if(Skill2_3.checked === true) changeSupporterSkill(SupportBuff2,id,3,true);
+        support = "supporter2";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond2.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill2_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill2_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill2_3.checked === true) changeSupporterSkill(support,id,3,true);
         }
     else if(support===3){
         id = Supporter3.value;
@@ -752,35 +782,26 @@ function changeSupporter(support) {
             $('#Skill3_3').prop('disabled',false);
             $('#Bond3').prop('disabled',false);
         }
-        prevbuf = SupportBuff3;
-        SupportBuff3 = makeZeroArray(buffLength);
-        if(Bond3.checked === true) changeSupporterSkill(SupportBuff3,id,0,true);
-        if(Skill3_1.checked === true) changeSupporterSkill(SupportBuff3,id,1,true);
-        if(Skill3_2.checked === true) changeSupporterSkill(SupportBuff3,id,2,true);
-        if(Skill3_3.checked === true) changeSupporterSkill(SupportBuff3,id,3,true);
+        support = "supporter3";
+        updateBuff_once(false,support,0,null);
+        updateBuff_once(false,support,1,null);
+        updateBuff_once(false,support,2,null);
+        updateBuff_once(false,support,3,null);
+        updateBuff_once(false,support,4,null);
+        if(Bond3.checked === true) changeSupporterSkill(support,id,0,true);
+        if(Skill3_1.checked === true) changeSupporterSkill(support,id,1,true);
+        if(Skill3_2.checked === true) changeSupporterSkill(support,id,2,true);
+        if(Skill3_3.checked === true) changeSupporterSkill(support,id,3,true);
     }
-    updateBuff_one(prevbuf,null);
 }
 
-function changeSupporterSkill(SupportBuff, id, skill, onoff){
+function changeSupporterSkill(support, id, skill, onoff){
     if(Number(id) === 0) return ;
-    var i = (Number(id) * 4) -3 + Number(skill);
-    var objecttemp = Object.entries(supportSkillTable[i]);
-    var arraytemp = makeZeroArray(buffLength);
-    if(onoff === true){
-        for(var j=0; j<buffLength; j++){
-          SupportBuff[j] = SupportBuff[j] + objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(null,arraytemp);
-    }
-    else if(onoff === false){
-        for(var j=0; j<buffLength; j++){
-            SupportBuff[j] = SupportBuff[j] - objecttemp[j+3][1];
-            arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(arraytemp,null);
-    }
+    var i = (Number(id) * 5) - 4 + Number(skill);
+    if(onoff == true)
+        updateBuff_once(true,support,skill,i);
+    else
+        updateBuff_once(false,support,skill,null);
 }
 
 Supporter1.addEventListener("change",function(){//서포터1 변경 이벤트
@@ -790,40 +811,40 @@ Bond1.addEventListener("change",function(){//서포터1 인연예장 변경 이�
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,0,true)
+        changeSupporterSkill("supporter1",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,0,false)
+        changeSupporterSkill("supporter1",id,0,false)
     }
 })
 Skill1_1.addEventListener("change",function(){//서포터1 스킬1 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,1,true)
+        changeSupporterSkill("supporter1",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,1,false)
+        changeSupporterSkill("supporter1",id,1,false)
     }
 })
 Skill1_2.addEventListener("change",function(){//서포터1 스킬2 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,2,true)
+        changeSupporterSkill("supporter1",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,2,false)
+        changeSupporterSkill("supporter1",id,2,false)
     }
 })
 Skill1_3.addEventListener("change",function(){//서포터1 스킬3 변경 이벤트
     var id = Supporter1.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff1,id,3,true)
+        changeSupporterSkill("supporter1",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff1,id,3,false)
+        changeSupporterSkill("supporter1",id,3,false)
     }
 })
 
@@ -834,40 +855,40 @@ Bond2.addEventListener("change",function(){//서포터2 인연예장 변경 이�
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,0,true)
+        changeSupporterSkill("supporter2",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,0,false)
+        changeSupporterSkill("supporter2",id,0,false)
     }
 })
 Skill2_1.addEventListener("change",function(){//서포터2 스킬1 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,1,true)
+        changeSupporterSkill("supporter2",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,1,false)
+        changeSupporterSkill("supporter2",id,1,false)
     }
 })
 Skill2_2.addEventListener("change",function(){//서포터2 스킬2 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,2,true)
+        changeSupporterSkill("supporter2",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,2,false)
+        changeSupporterSkill("supporter2",id,2,false)
     }
 })
 Skill2_3.addEventListener("change",function(){//서포터2 스킬3 변경 이벤트
     var id = Supporter2.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff2,id,3,true)
+        changeSupporterSkill("supporter2",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff2,id,3,false)
+        changeSupporterSkill("supporter2",id,3,false)
     }
 })
 
@@ -878,68 +899,66 @@ Bond3.addEventListener("change",function(){//서포터3 인연예장 변경 이�
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,0,true)
+        changeSupporterSkill("supporter3",id,0,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,0,false)
+        changeSupporterSkill("supporter3",id,0,false)
     }
 })
 Skill3_1.addEventListener("change",function(){//서포터3 스킬1 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,1,true)
+        changeSupporterSkill("supporter3",id,1,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,1,false)
+        changeSupporterSkill("supporter3",id,1,false)
     }
 })
 Skill3_2.addEventListener("change",function(){//서포터3 스킬2 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,2,true)
+        changeSupporterSkill("supporter3",id,2,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,2,false)
+        changeSupporterSkill("supporter3",id,2,false)
     }
 })
 Skill3_3.addEventListener("change",function(){//서포터3 스킬3 변경 이벤트
     var id = Supporter3.value;
     if(this.checked === true)
     {
-        changeSupporterSkill(SupportBuff3,id,3,true)
+        changeSupporterSkill("supporter3",id,3,true)
     }
     else{
-        changeSupporterSkill(SupportBuff3,id,3,false)
+        changeSupporterSkill("supporter3",id,3,false)
     }
 })
 
 function changeMysticCode(){
-    updateBuff_one(MysticBuff,null);
-    MysticBuff = makeZeroArray(buffLength);
+    updateBuff_once(false,"mystic",1,null);
+    updateBuff_once(false,"mystic",2,null);
+    updateBuff_once(false,"mystic",3,null);
     var i = Number(MysticCode.value) * 3;
-    if(mysticSkillTable[i]["used"]===0){
+    var tblength = mysticSkillTable[0].length - 1;
+    if(mysticSkillTable[i][tblength]===0){
         MysticSkill1.checked = false;
         $('#MysticSkill1').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i]["used"]===1){
-        $('#MysticSkill1').prop('disabled',false); 
-    }
-    if(mysticSkillTable[i+1]["used"]===0){
+    else $('#MysticSkill1').prop('disabled',false); 
+
+    if(mysticSkillTable[i+1][tblength]===0){
         MysticSkill2.checked = false;
         $('#MysticSkill2').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i+1]["used"]===1){
-        $('#MysticSkill2').prop('disabled',false); 
-    }
-    if(mysticSkillTable[i+2]["used"]===0){
+    else $('#MysticSkill2').prop('disabled',false); 
+
+    if(mysticSkillTable[i+2][tblength]===0){
         MysticSkill3.checked = false;
         $('#MysticSkill3').prop('disabled',true); 
     }
-    else if(mysticSkillTable[i+2]["used"]===1){
-        $('#MysticSkill3').prop('disabled',false); 
-    }
+    else $('#MysticSkill3').prop('disabled',false); 
 
     if(MysticSkill1.checked === true) changeMysticSkill(1,true);
     if(MysticSkill2.checked === true) changeMysticSkill(2,true);
@@ -952,23 +971,14 @@ MysticCode.addEventListener("change",function(){//마술예장 드롭다운 이�
 })
 function changeMysticSkill(skill, onoff){
     var i = Number(MysticCode.value) * 3 - 1 + Number(skill);
-    var objecttemp = Object.entries(mysticSkillTable[i]);
-    var arraytemp = makeZeroArray(buffLength);
     if(onoff === true){
-        for(var j=0; j<buffLength; j++){
-          MysticBuff[j] = MysticBuff[j] + objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(null,arraytemp);
+        updateBuff_once(true,"mystic",skill,i);
     }
     else if(onoff === false){
-        for(var j=0; j<buffLength; j++){
-          MysticBuff[j] = MysticBuff[j] - objecttemp[j+3][1];
-          arraytemp[j] = objecttemp[j+3][1];
-        }
-        updateBuff_one(arraytemp,null);
+        updateBuff_once(false,"mystic",skill,null);
     }
 }
+
 MysticSkill1.addEventListener("change",function(){//마술예장 스킬1 변경 이벤트
     if(this.checked === true)
     {
@@ -1000,7 +1010,7 @@ NpLev.addEventListener("change",function(){//보구레벨 드롭다운 이벤트
     var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
     if(NpCommand.value == 3) {
         NpMag.value=NpMag_tmp*1.5;
-    }else
+    }else if(NpCommand.value == 1)
     {
         NpMag.value= NpMag_tmp*2;
     }
@@ -1022,7 +1032,7 @@ NpUpgrade.addEventListener("change",function() {//보구강화 드롭다운 이�
     var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
     if (NpCommand.value == 3) {
         NpMag.value = NpMag_tmp * 1.5;
-    } else {
+    } else if (NpCommand.value == 1) {
         NpMag.value = NpMag_tmp * 2;
     }
     if(Servant.value === "Frankenstein")
