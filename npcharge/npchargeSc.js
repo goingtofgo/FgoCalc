@@ -64,7 +64,7 @@ function getData() {
             var NpMag_tmp = NpDmTable[0] + 100 * NpUpgrade.value;
             if(NpCommand.value == 3) {
                 NpMag.value=NpMag_tmp*1.5;
-            }else
+            }else if(NpCommand.value == 1)
             {
                 NpMag.value= NpMag_tmp*2;
             }
@@ -317,6 +317,7 @@ const NpDmTableSp = [
 const ClassDmgMagTable = new Array (1,0.95,1.05,1,0.9,0.9,1.1,1,1.1,1.1,1,1,1);//클래스 보정계수
 const ClassNpRechargeMagTable = new Array(1,1,1,1.1,1.2,0.9,0.8,1,1,1,1.2,1,1);//적 클래스 NP보정계수
 const CommandMagTable = {
+  0 : 1.5,
   1 : 0.8,
   3 : 1
 };//커맨드 보정계수
@@ -526,7 +527,7 @@ Servant.addEventListener("change",function(){//서번트 드롭다운 이벤트
             var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
             if(NpCommand.value == 3) {
                 NpMag.value=NpMag_tmp*1.5;
-            }else
+            }else if(NpCommand.value == 1)
             {
                 NpMag.value= NpMag_tmp*2;
             }
@@ -635,8 +636,8 @@ function updateBuff_once(onoff, type, skill,id){
 
 //busterbuf,busterdebuf,artsbuf,artsdebuf,quickbuf,quickdebuf,npgainbuf,atkbuf,defdebuf,dmgplus,npplus,starbuf,npbuf,criticalbuf,againstbuf,npextramul,poison,successbuf
 function changeBuffView(){
-    if(Number(NpCommand.value)===3) CmdBuff.value = sumBuff[2];
-    else if(Number(NpCommand.value)===1) CmdBuff.value = sumBuff[4];
+    if(NpCommand.value == 3) CmdBuff.value = sumBuff[2];
+    else if(NpCommand.value == 1) CmdBuff.value = sumBuff[4];
     NpBuff.value = sumBuff[6];
     AtkBuff.value = sumBuff[7] + sumBuff[8];
     DmgPlus.value = sumBuff[9];
@@ -1009,7 +1010,7 @@ NpLev.addEventListener("change",function(){//보구레벨 드롭다운 이벤트
     var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
     if(NpCommand.value == 3) {
         NpMag.value=NpMag_tmp*1.5;
-    }else
+    }else if(NpCommand.value == 1)
     {
         NpMag.value= NpMag_tmp*2;
     }
@@ -1031,7 +1032,7 @@ NpUpgrade.addEventListener("change",function() {//보구강화 드롭다운 이�
     var NpMag_tmp = NpDmTable[NpLev.value - 1] + 100 * NpUpgrade.value;
     if (NpCommand.value == 3) {
         NpMag.value = NpMag_tmp * 1.5;
-    } else {
+    } else if (NpCommand.value == 1) {
         NpMag.value = NpMag_tmp * 2;
     }
     if(Servant.value === "Frankenstein")
